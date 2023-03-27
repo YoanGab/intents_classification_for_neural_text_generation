@@ -1,0 +1,3 @@
+[submodule "nlu-benchmark"]
+	path = nlu-benchmark
+	url = git@github.com:sonos/nlu-benchmark.git
