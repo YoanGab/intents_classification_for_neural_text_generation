@@ -154,7 +154,7 @@ for epoch in range(epochs):
     print(f"Epoch {epoch+1}/{epochs}, Train Loss: {np.mean(train_loss):.4f}, Val Loss: {val_loss:.4f}, Val Acc: {val_accuracy:.4f}")
 
 # Save model
-model.save_pretrained('models/bert')
+torch.save(model.state_dict(), 'bert_classifier_weights.pth')
 
 """
 metric = load_metric("accuracy")
