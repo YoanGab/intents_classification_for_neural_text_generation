@@ -1,2 +1,2 @@
-from .Bert import BertClassifier, SimpleBertClassifier
-from .Roberta import RobertaClassifier
+from .baseline import BaselineModel
+from .multi_layers_perceptron import ThreeLayersBertClassifier, MultiPerceptronBertClassifier

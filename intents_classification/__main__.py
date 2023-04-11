@@ -1,25 +1,45 @@
 from pathlib import Path
+from transformers import AutoModel
 
-from intents_classification.model import Model
-from intents_classification.models import (BertClassifier, RobertaClassifier,
-                                           SimpleBertClassifier)
+from intents_classification.trainer import Trainer, DatasetUploader, ModelLoader
+from intents_classification.models import (BaselineModel, 
+                                           ThreeLayersBertClassifier, 
+                                           MultiPerceptronBertClassifier)
 
 
 def main():
-    model = Model(
+    datasetLoader = DatasetUploader(
         dataset_name="dyda_da",
         tokenizer_name="bert-base-uncased",
-        language_model_name="bert-base-uncased",
-        model_type=BertClassifier,
-        model_name="bert_classifier",
-        model_dir=Path("models/Bert/saved_models"),
         batch_size=8,
-        loss="cross_entropy",
-        load=True,
     )
 
-    model.train(nb_epoch=1)
-    model.test()
+    modelLoader = ModelLoader(
+        datasetLoader=datasetLoader,
+        language_model_name="bert-base-uncased",
+        model_type=ThreeLayersBertClassifier,
+        model_name="bert_classifier",
+        model_dir=Path("models/Bert/saved_models"),
+        language_model_class = AutoModel,
+        loss="cross_entropy",
+        load=False,
+    )
+
+    trainer = Trainer(
+        datasetLoader=datasetLoader,
+        modelLoader=modelLoader,
+    )
+
+    trainer.train(
+        nb_epoch=10,
+        learning_rate=2e-5,
+        clip_grad_norm=1.0,
+        save_freq=1000,
+        warm_start=True,
+        scheduler=False,
+    )
+
+    trainer.test()
 
 
 if __name__ == "__main__":
