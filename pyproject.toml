@@ -23,7 +23,9 @@ matplotlib = "^3.7.1"
 torchtext = "^0.15.1"
 seaborn = "^0.12.2"
 
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+main = "intents_classification.__main__:main"
