@@ -9,7 +9,7 @@ from sadice import SelfAdjDiceLoss
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.utils import class_weight
 from torch.optim import AdamW
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 from transformers import AutoModel
 
@@ -84,8 +84,9 @@ class Model:
 
     def _reset_model(self):
         self.model = self.model_type(
-            self.train_dataset.tokenizer, len(self.unique_labels), self.embedding_dim
+            self.language_model, len(self.unique_labels), self.embedding_dim
         )
+        print(self.model)
         if self.load:
             self._load_model()
 
