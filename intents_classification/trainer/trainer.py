@@ -1,23 +1,22 @@
-from tqdm import tqdm
 import numpy as np
 import pandas as pd
-
-from sklearn.metrics import classification_report, confusion_matrix
-
 import torch
+from sklearn.metrics import classification_report, confusion_matrix
 from torch import nn
 from torch.optim import AdamW
+from tqdm import tqdm
 from transformers import get_linear_schedule_with_warmup
 
 from .dataset_uploader import DatasetUploader
 from .model_loader import ModelLoader
-from .utils import flat_accuracy, plot_acc_loss
+from .utils import DataType, FigureType, flat_accuracy, plot_comparison
+
 
 class Trainer:
     def __init__(self, datasetLoader: DatasetUploader, modelLoader: ModelLoader):
         self.datasetLoader = datasetLoader
         self.modelLoader = modelLoader
-        
+
     def train(
         self,
         nb_epoch: int,
@@ -26,9 +25,9 @@ class Trainer:
         save_freq: int = 1000,
         warm_start: bool = True,
         scheduler: bool = False,
-    ):  
+    ):
         total_steps = len(self.datasetLoader.train_dataloader) * nb_epoch
-       
+
         if not warm_start:
             self.modelLoader._reset_model()
 
@@ -36,19 +35,21 @@ class Trainer:
 
         if scheduler:
             self.scheduler = get_linear_schedule_with_warmup(
-                optimizer, 
-                num_warmup_steps = 0,
-                num_training_steps = total_steps
+                optimizer, num_warmup_steps=0, num_training_steps=total_steps
             )
 
-        self.total_loss = []
-        self.total_accuracy = []
-        nb_val_correct = 0
-        nb_val_total = 0
+        self.train_loss_per_batch = []
+        self.train_accuracy_per_batch = []
+        self.val_loss_per_epoch = []
+        self.val_accuracy_per_epoch = []
+        self.train_accuracy_per_epoch = []
+        self.train_loss_per_epoch = []
         progress_bar = tqdm(range(total_steps))
 
         self.modelLoader.model.train()
         for epoch in range(nb_epoch):
+            train_loss_over_one_epoch = []
+            train_accuracy_over_one_epoch = []
             for step, batch in enumerate(self.datasetLoader.train_dataloader):
                 b_input_ids = batch["input_ids"].to(self.modelLoader.device)
                 b_input_mask = batch["attention_mask"].to(self.modelLoader.device)
@@ -57,10 +58,10 @@ class Trainer:
                 optimizer.zero_grad()
 
                 outputs = self.modelLoader.model(
-                    input_ids = b_input_ids, 
+                    input_ids=b_input_ids,
                     attention_mask=b_input_mask,
-                    token_type_ids=None, 
-                    labels=b_labels
+                    token_type_ids=None,
+                    labels=b_labels,
                 )
 
                 if self.modelLoader.model_type == "auto":
@@ -69,45 +70,79 @@ class Trainer:
                 else:
                     loss = self.modelLoader.criterion(outputs, b_labels)
 
-                self.total_loss.append(loss.item())
+                self.train_loss_per_batch.append(loss.item())
+                train_loss_over_one_epoch.append(loss.item())
 
                 loss.backward()
 
-                nn.utils.clip_grad_norm_(self.modelLoader.model.parameters(), clip_grad_norm)
+                if clip_grad_norm != None:
+                    nn.utils.clip_grad_norm_(
+                        self.modelLoader.model.parameters(), clip_grad_norm
+                    )
+
+                detached_outputs = outputs.detach().cpu().numpy()
+                detached_labels = b_labels.detach().cpu().numpy()
+                b_accuracy = flat_accuracy(detached_outputs, detached_labels)
+
+                self.train_accuracy_per_batch.append(b_accuracy)
+                train_accuracy_over_one_epoch.append(b_accuracy)
 
                 optimizer.step()
                 if scheduler:
                     self.scheduler.step()
-                                    
-
-                detached_outputs = outputs.detach().cpu().numpy()
-                detached_labels = b_labels.detach().cpu().numpy()
-                nb_val_correct += flat_accuracy(detached_outputs, detached_labels)
-                nb_val_total += len(detached_labels)
-
-                self.total_accuracy.append(nb_val_correct / nb_val_total)
 
                 progress_bar.set_description(
-                    f"loss: {round(self.total_loss[-1],3): .4f} | Avg loss: {np.mean(self.total_loss): .4f} | Avg Acc{100*self.total_accuracy[-1] : .2f}"
+                    f"loss: {self.train_loss_per_batch[-1]: 4f} | Acc: {100*self.train_accuracy_per_batch[-1]: 3f} | Avg loss: {np.mean(self.train_loss_per_batch): .4f} | Avg Acc{100*np.mean(self.train_accuracy_per_batch) : .3f}"
                 )
                 progress_bar.update(1)
                 if (step % save_freq == 0) and (step != 0):
                     self.modelLoader._save_model(checkpoint=True, epoch=epoch)
 
-            val_mean_loss, val_mean_accuracy = self.evaluate()
+            avg_current_train_loss = np.mean(train_loss_over_one_epoch)
+            self.train_loss_per_epoch.append(avg_current_train_loss)
+
+            avg_current_train_accuracy = np.mean(train_accuracy_over_one_epoch)
+            self.train_accuracy_per_epoch.append(avg_current_train_accuracy)
+
+            avg_val_loss, avg_val_accuracy = self.evaluate()
+            self.val_loss_per_epoch.append(avg_val_loss)
+            self.val_accuracy_per_epoch.append(avg_val_accuracy)
+
             print(
-                f"Epoch {epoch+1}/{nb_epoch}, Train Loss: {self.total_loss[-1]:.4f}, Train Acc: {100*self.total_accuracy[-1] : .2f}, Val Loss: {val_mean_loss:.4f}, Val Acc: {val_mean_accuracy:.4f}"
+                f"Epoch {epoch+1}/{nb_epoch}, Train Loss: {avg_current_train_loss:.4f}, Train Acc: {100*avg_current_train_accuracy: .3f}, Val Loss: {avg_val_loss:.4f}, Val Acc: {100*avg_val_accuracy:.3f}"
             )
+
         self.modelLoader._save_model()
-        plot_acc_loss(self.modelLoader.model_name, self.total_loss, self.total_accuracy)
+        if nb_epoch > 1:
+            plot_comparison(
+                self.modelLoader.model_name,
+                [self.train_loss_per_epoch, self.val_loss_per_epoch],
+                FigureType.TRAIN_VAL,
+                DataType.LOSS,
+                True,
+            )
+
+            plot_comparison(
+                self.modelLoader.model_name,
+                [self.train_accuracy_per_epoch, self.val_accuracy_per_epoch],
+                FigureType.TRAIN_VAL,
+                DataType.ACCURACY,
+                True,
+            )
+
+        plot_comparison(
+            self.modelLoader.model_name,
+            [self.train_accuracy_per_batch],
+            FigureType.TRAIN,
+            DataType.ACCURACY,
+            False,
+        )
 
     def evaluate(self):
-        total_loss = []
-        total_accuracy = []
-        nb_val_correct = 0
-        nb_val_total = 0
+        loss_per_batch = []
+        accuracy_per_batch = []
         progress_bar = tqdm(range(len(self.datasetLoader.eval_dataloader)))
-        self.model.eval()
+        self.modelLoader.model.eval()
 
         with torch.no_grad():
             for batch in self.datasetLoader.eval_dataloader:
@@ -116,10 +151,10 @@ class Trainer:
                 b_labels = batch["labels"].to(self.modelLoader.device)
 
                 outputs = self.modelLoader.model(
-                    input_ids = b_input_ids, 
+                    input_ids=b_input_ids,
                     attention_mask=b_input_mask,
-                    token_type_ids=None, 
-                    labels=b_labels
+                    token_type_ids=None,
+                    labels=b_labels,
                 )
 
                 if self.modelLoader.model_type == "auto":
@@ -127,23 +162,18 @@ class Trainer:
                     outputs = outputs.logits
                 else:
                     loss = self.modelLoader.criterion(outputs, b_labels)
-                total_loss.append(loss.item())
-
+                loss_per_batch.append(loss.item())
 
                 detached_outputs = outputs.detach().cpu().numpy()
                 detached_labels = b_labels.detach().cpu().numpy()
-                nb_val_correct += flat_accuracy(detached_outputs, detached_labels)
-                nb_val_total += len(detached_labels)
 
-                total_accuracy.append(nb_val_correct / nb_val_total)
+                b_accuracy = flat_accuracy(detached_outputs, detached_labels)
+                accuracy_per_batch.append(b_accuracy)
 
                 progress_bar.update(1)
 
-        val_mean_loss = np.mean(total_loss)
-        val_mean_accuracy = total_accuracy[-1]
-
         self.modelLoader.model.train()
-        return val_mean_loss, val_mean_accuracy
+        return np.mean(loss_per_batch), np.mean(accuracy_per_batch)
 
     def test(self):
         preds, trues = [], []
@@ -152,17 +182,17 @@ class Trainer:
             desc="testing",
             total=self.datasetLoader.test_dataloader.__len__(),
         ):
-            batch = {k: v.to(self.device) for k, v in batch.items()}
+            batch = {k: v.to(self.modelLoader.device) for k, v in batch.items()}
             b_input_ids = batch["input_ids"].to(self.modelLoader.device)
             b_input_mask = batch["attention_mask"].to(self.modelLoader.device)
             b_labels = batch["labels"].to(self.modelLoader.device)
 
             with torch.no_grad():
                 outputs = self.modelLoader.model(
-                    input_ids = b_input_ids, 
+                    input_ids=b_input_ids,
                     attention_mask=b_input_mask,
-                    token_type_ids=None, 
-                    labels=b_labels
+                    token_type_ids=None,
+                    labels=b_labels,
                 )
                 if self.modelLoader.model_type == "auto":
                     outputs = outputs.logits
@@ -171,16 +201,26 @@ class Trainer:
             preds.extend(predictions)
             trues.extend(b_labels.cpu().detach().tolist())
 
-        print(
+        report_df = pd.DataFrame(
             classification_report(
                 np.array(trues).flatten(),
                 np.array(preds).flatten(),
-                target_names=self.unique_labels,
+                target_names=self.datasetLoader.unique_labels,
+                output_dict=True,
             )
-        )
+        ).transpose()
+
+        report_df.to_csv(self.modelLoader.model_dir / "classification_report.csv")
 
         cm = confusion_matrix(np.array(trues).flatten(), np.array(preds).flatten())
         df_cm = pd.DataFrame(
-            cm, index=self.unique_labels, columns=self.unique_labels
+            cm,
+            index=self.datasetLoader.unique_labels,
+            columns=self.datasetLoader.unique_labels,
         )
+        df_cm.to_csv(self.modelLoader.model_dir / "confusion_matrix.csv")
+
+        print("Classification Report")
+        print(report_df)
+        print("Confusion Matrix")
         print(df_cm)

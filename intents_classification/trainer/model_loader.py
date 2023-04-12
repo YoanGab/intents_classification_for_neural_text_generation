@@ -1,13 +1,14 @@
+from pathlib import Path
+
 import torch
 import torch.nn as nn
-from transformers import AutoModel
-from pathlib import Path
-from tqdm import tqdm
-from transformers import BertForSequenceClassification
 from sadice import SelfAdjDiceLoss
 from sklearn.utils import class_weight
+from tqdm import tqdm
+from transformers import AutoModel, BertForSequenceClassification
 
 from .dataset_uploader import DatasetUploader
+
 
 class ModelLoader:
     def __init__(
@@ -26,7 +27,12 @@ class ModelLoader:
         self.embedding_dim = self.language_model.config.hidden_size
 
         self.model_name = model_name
-        self.model_dir = Path(f"intents_classification") / "models" / "model_checkpoints" / f"{self.model_name}"
+        self.model_dir = (
+            Path(f"intents_classification")
+            / "models"
+            / "model_checkpoints"
+            / f"{self.model_name}"
+        )
         self.model_dir.mkdir(parents=True, exist_ok=True)
         self.checkpoints = [checkpoint for checkpoint in self.model_dir.glob("*.pth")]
         self.model_type = model_type
@@ -55,14 +61,16 @@ class ModelLoader:
     def _reset_model(self):
         if type(self.model_type) != str:
             self.model = self.model_type(
-                self.language_model, len(self.datasetLoader.unique_labels), self.embedding_dim
+                self.language_model,
+                len(self.datasetLoader.unique_labels),
+                self.embedding_dim,
             )
         elif self.model_type == "auto":
             self.model = BertForSequenceClassification.from_pretrained(
                 self.language_model_name,
-                num_labels = len(self.datasetLoader.unique_labels), 
-                output_attentions = False, 
-                output_hidden_states = False
+                num_labels=len(self.datasetLoader.unique_labels),
+                output_attentions=False,
+                output_hidden_states=False,
             )
         else:
             raise ValueError("Model type not supported")
@@ -80,7 +88,12 @@ class ModelLoader:
     def _save_model(self, checkpoint: bool = False, epoch: int = 0):
         if checkpoint == False:
             self.model_path = self.model_dir / f"{self.model_name}.pth"
-        torch.save(self.model.state_dict(), self.model_path if not checkpoint else self.model_dir / f"{self.model_name}_{epoch}.pth")
+        torch.save(
+            self.model.state_dict(),
+            self.model_path
+            if not checkpoint
+            else self.model_dir / f"{self.model_name}_{epoch}.pth",
+        )
 
     def _get_class_weights(self):
         labels = []

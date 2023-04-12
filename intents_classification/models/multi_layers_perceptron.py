@@ -1,9 +1,13 @@
 import torch.nn as nn
+
 from intents_classification.models.baseline import BaselineModel
+
 
 class ThreeLayersBertClassifier(BaselineModel, nn.Module):
     def __init__(self, llm_trained_model, num_classes, embedding_dim):
-        super(ThreeLayersBertClassifier, self).__init__(llm_trained_model, num_classes, embedding_dim)
+        super(ThreeLayersBertClassifier, self).__init__(
+            llm_trained_model, num_classes, embedding_dim
+        )
 
         self.classifier = nn.Sequential(
             nn.Linear(embedding_dim, 768),
@@ -11,13 +15,16 @@ class ThreeLayersBertClassifier(BaselineModel, nn.Module):
             nn.Linear(768, 768),
             nn.ReLU(),
             nn.Dropout(0.15),
-            nn.Linear(768, num_classes), 
-            nn.Softmax(dim=0)
+            nn.Linear(768, num_classes),
+            nn.Softmax(dim=0),
         )
 
-class MultiPerceptronBertClassifier(BaselineModel, nn.Module):
+
+class FourLayersBertClassifier(BaselineModel, nn.Module):
     def __init__(self, llm_trained_model, num_classes, embedding_dim):
-        super(MultiPerceptronBertClassifier, self).__init__(llm_trained_model, num_classes, embedding_dim)
+        super(FourLayersBertClassifier, self).__init__(
+            llm_trained_model, num_classes, embedding_dim
+        )
 
         self.classifier = nn.Sequential(
             nn.Linear(embedding_dim, 1024),
