@@ -7,13 +7,12 @@ from torch.optim import AdamW
 from tqdm import tqdm
 from transformers import get_linear_schedule_with_warmup
 
-from .dataset_uploader import DatasetUploader
-from .model_loader import ModelLoader
+from intents_classification.loaders import DatasetLoader, ModelLoader
 from .utils import DataType, FigureType, flat_accuracy, plot_comparison
 
 
 class Trainer:
-    def __init__(self, datasetLoader: DatasetUploader, modelLoader: ModelLoader):
+    def __init__(self, datasetLoader: DatasetLoader, modelLoader: ModelLoader):
         self.datasetLoader = datasetLoader
         self.modelLoader = modelLoader
 

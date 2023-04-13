@@ -7,24 +7,26 @@ from sklearn.utils import class_weight
 from tqdm import tqdm
 from transformers import AutoModel, BertForSequenceClassification
 
-from .dataset_uploader import DatasetUploader
+from .dataset_loader import DatasetLoader
 
 
 class ModelLoader:
     def __init__(
         self,
-        datasetLoader: DatasetUploader,
+        datasetLoader: DatasetLoader,
         language_model_name: str,
         model_type: nn.Module or str,
         model_name: str,
         language_model_class: any = AutoModel,
         loss: str = "cross_entropy",
         load: bool = True,
+        model_path: str = None,
     ):
         self.datasetLoader = datasetLoader
         self.language_model_name = language_model_name
         self.language_model = language_model_class.from_pretrained(language_model_name)
         self.embedding_dim = self.language_model.config.hidden_size
+        self.model_path = model_path
 
         self.model_name = model_name
         self.model_dir = (
@@ -78,7 +80,8 @@ class ModelLoader:
             self._load_model()
 
     def _load_model(self):
-        self.model_path = self.model_dir / f"{self.model_name}.pth"
+        if self.model_path == None:
+            self.model_path = self.model_dir / f"{self.model_name}.pth"
         if self.model_path.exists():
             print(f"Loading model {self.model_name}")
             self.model.load_state_dict(torch.load(self.model_path))
