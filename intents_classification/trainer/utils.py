@@ -29,7 +29,7 @@ def flat_accuracy(preds: Union[list, np.ndarray], labels: Union[list, np.ndarray
 
 def plot_comparison(
     model_name: str,
-    signals: list[Union[list, np.ndarray]],
+    signals: list,
     fig_type: FigureType,
     data_type: DataType,
     epochs: bool,
@@ -43,8 +43,10 @@ def plot_comparison(
     ax.plot(range(len(signals[0])), signals[0], label=labels[0])
     if len(signals) > 1:
         ax.plot(range(len(signals[1])), signals[1], label=labels[1], color="orange")
+        ax.legend()
     if len(signals) > 2:
         ax.plot(range(len(signals[2])), signals[2], label=labels[2], color="green")
+        ax.legend()
 
     if epochs:
         ax.set_xlabel("Epochs")
@@ -53,11 +55,11 @@ def plot_comparison(
 
     ax.set_ylabel(data_type.value)
 
-    fig_title = f"{fig_type.value.replace('_', ' ')} {data_type.value} evolution over {len(signals[0])} {'epochs' if epochs else 'all training'}"
+    fig_title = f"{fig_type.value.replace('_', ' ')} {data_type.value} evolution over {str(len(signals[0])) + ' epochs' if epochs else 'all training'}"
 
     ax.set_title(fig_title)
     fig.savefig(
         figure_path
-        / f"{fig_type.name}_{data_type.value}_{len(signals[0])}_{'epochs' if epochs else 'all'}.png",
+        / f"{fig_type.name}_{data_type.value}_{str(len(signals[0])) + '_epochs' if epochs else 'all'}.png",
         format="png",
     )

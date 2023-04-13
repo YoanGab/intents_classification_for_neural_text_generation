@@ -23,8 +23,10 @@ class Trainer:
         learning_rate: float = 5e-5,
         clip_grad_norm: float = 1.0,
         save_freq: int = 1000,
+        save: bool = False,
         warm_start: bool = True,
         scheduler: bool = False,
+        checkpoints: bool = False,
     ):
         total_steps = len(self.datasetLoader.train_dataloader) * nb_epoch
 
@@ -95,7 +97,7 @@ class Trainer:
                     f"loss: {self.train_loss_per_batch[-1]: 4f} | Acc: {100*self.train_accuracy_per_batch[-1]: 3f} | Avg loss: {np.mean(self.train_loss_per_batch): .4f} | Avg Acc{100*np.mean(self.train_accuracy_per_batch) : .3f}"
                 )
                 progress_bar.update(1)
-                if (step % save_freq == 0) and (step != 0):
+                if (step % save_freq == 0) and (step != 0) and checkpoints:
                     self.modelLoader._save_model(checkpoint=True, epoch=epoch)
 
             avg_current_train_loss = np.mean(train_loss_over_one_epoch)
@@ -112,7 +114,8 @@ class Trainer:
                 f"Epoch {epoch+1}/{nb_epoch}, Train Loss: {avg_current_train_loss:.4f}, Train Acc: {100*avg_current_train_accuracy: .3f}, Val Loss: {avg_val_loss:.4f}, Val Acc: {100*avg_val_accuracy:.3f}"
             )
 
-        self.modelLoader._save_model()
+        if save:
+            self.modelLoader._save_model()
         if nb_epoch > 1:
             plot_comparison(
                 self.modelLoader.model_name,
@@ -196,7 +199,7 @@ class Trainer:
                 )
                 if self.modelLoader.model_type == "auto":
                     outputs = outputs.logits
-                predictions = np.argmax(outputs.logits.detach().cpu().numpy(), axis=1)
+                predictions = np.argmax(outputs.detach().cpu().numpy(), axis=1)
 
             preds.extend(predictions)
             trues.extend(b_labels.cpu().detach().tolist())

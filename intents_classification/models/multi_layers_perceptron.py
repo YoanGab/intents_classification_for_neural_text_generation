@@ -2,7 +2,6 @@ import torch.nn as nn
 
 from intents_classification.models.baseline import BaselineModel
 
-
 class ThreeLayersBertClassifier(BaselineModel, nn.Module):
     def __init__(self, llm_trained_model, num_classes, embedding_dim):
         super(ThreeLayersBertClassifier, self).__init__(
