@@ -8,6 +8,7 @@ from tqdm import tqdm
 from transformers import get_linear_schedule_with_warmup
 
 from intents_classification.loaders import DatasetLoader, ModelLoader
+
 from .utils import DataType, FigureType, flat_accuracy, plot_comparison
 
 

@@ -6,9 +6,7 @@ class BaselineModel(nn.Module):
         super(BaselineModel, self).__init__()
         self.llm_trained_model = llm_trained_model
         self.classifier = nn.Sequential(
-            nn.Linear(embedding_dim, num_classes), 
-            nn.Dropout(0.15), 
-            nn.Softmax(dim=0)
+            nn.Linear(embedding_dim, num_classes), nn.Dropout(0.15), nn.Softmax(dim=0)
         )
 
         for param in self.llm_trained_model.parameters():

@@ -68,7 +68,7 @@ def plot_comparison(
 
 def analyze_results():
     results = {}
-    model_folders = [x for x in Path('Results').iterdir() if x.is_dir()]
+    model_folders = [x for x in Path("Results").iterdir() if x.is_dir()]
     for model_folder in model_folders:
         llm_folders = [x for x in model_folder.iterdir() if x.is_dir()]
         results[model_folder.name] = {}
@@ -76,11 +76,13 @@ def analyze_results():
             dataset_folders = [x for x in llm_folder.iterdir() if x.is_dir()]
             results[model_folder.name][llm_folder.name] = {}
             for dataset_folder in dataset_folders:
-                csv_files = [x for x in dataset_folder.iterdir() if x.suffix == '.csv']
+                csv_files = [x for x in dataset_folder.iterdir() if x.suffix == ".csv"]
                 for csv_file in csv_files:
-                    if csv_file.name == 'classification_report.csv':
+                    if csv_file.name == "classification_report.csv":
                         df = pd.read_csv(csv_file, index_col=0)
-                        results[model_folder.name][llm_folder.name][dataset_folder.name] = df
+                        results[model_folder.name][llm_folder.name][
+                            dataset_folder.name
+                        ] = df
 
     inverted_results = {}
 
@@ -98,38 +100,73 @@ def analyze_results():
         dataset_folder = dataset_folder.name
         df_dict = {}
 
-        first_col_index = [v for v in inverted_results[dataset_folder] for _ in list(inverted_results[dataset_folder][v].keys()) + [f"best_{v}"]] + ["best"]
-        second_col_index = [val for k in inverted_results[dataset_folder] for val in list(inverted_results[dataset_folder][k].keys()) + [f"best_{k}"]] + ["best"]
+        first_col_index = [
+            v
+            for v in inverted_results[dataset_folder]
+            for _ in list(inverted_results[dataset_folder][v].keys()) + [f"best_{v}"]
+        ] + ["best"]
+        second_col_index = [
+            val
+            for k in inverted_results[dataset_folder]
+            for val in list(inverted_results[dataset_folder][k].keys()) + [f"best_{k}"]
+        ] + ["best"]
         arrays = [first_col_index, second_col_index]
         tuples = list(zip(*arrays))
         columns = pd.MultiIndex.from_tuples(tuples)
 
         for i, key in enumerate(inverted_results[dataset_folder]):
             if i == 0:
-                first_row_index = [class_name for class_name in inverted_results[dataset_folder][key]["baseline"].index for _ in inverted_results[dataset_folder][key]["baseline"].columns[:-1]] + ["best"]
-                second_row_index = [metric for _ in inverted_results[dataset_folder][key]["baseline"].index for metric in inverted_results[dataset_folder][key]["baseline"].columns[:-1]] + ["best"]
-                        
+                first_row_index = [
+                    class_name
+                    for class_name in inverted_results[dataset_folder][key][
+                        "baseline"
+                    ].index
+                    for _ in inverted_results[dataset_folder][key]["baseline"].columns[
+                        :-1
+                    ]
+                ] + ["best"]
+                second_row_index = [
+                    metric
+                    for _ in inverted_results[dataset_folder][key]["baseline"].index
+                    for metric in inverted_results[dataset_folder][key][
+                        "baseline"
+                    ].columns[:-1]
+                ] + ["best"]
+
                 arrays = [first_row_index, second_row_index]
                 tuples = list(zip(*arrays))
-                index = pd.MultiIndex.from_tuples(tuples)        
+                index = pd.MultiIndex.from_tuples(tuples)
 
             for model_name, df in inverted_results[dataset_folder][key].items():
-                values = np.concatenate((df.iloc[:,:-1].values.flatten(), np.array([0])), axis=0)
-                df_dict[(key, model_name)] = np.concatenate((values[:-8], values[-6:]), axis=0)
+                values = np.concatenate(
+                    (df.iloc[:, :-1].values.flatten(), np.array([0])), axis=0
+                )
+                df_dict[(key, model_name)] = np.concatenate(
+                    (values[:-8], values[-6:]), axis=0
+                )
 
-            df_dict[(key, f"best_{key}")] = np.zeros(len(first_row_index)-2)
-        df_dict[("best", "best")] = np.zeros(len(first_row_index)-2)
-        index = index.drop([('accuracy', 'recall'), ('accuracy', 'f1-score')])
+            df_dict[(key, f"best_{key}")] = np.zeros(len(first_row_index) - 2)
+        df_dict[("best", "best")] = np.zeros(len(first_row_index) - 2)
+        index = index.drop([("accuracy", "recall"), ("accuracy", "f1-score")])
 
         df = pd.DataFrame(df_dict, index=index, columns=columns)
-        #df = df.rename(index={'precision': 'accuracy'}, level=1)
+        # df = df.rename(index={'precision': 'accuracy'}, level=1)
         for key in inverted_results[dataset_folder]:
-            df.loc[:, (key, f'best_{key}')] = df.loc[:, key].apply(lambda x: df.loc[:, 'bert'].columns[:-1][x.argmax()], axis=1)
-            df.loc["best", (key, f'best_{key}')] = df.loc[:,(key, f'best_{key}')].mode()[0]
-        df[("best", "best")] = df.apply(lambda x: list(inverted_results[dataset_folder].keys())[np.argmax([x.iloc[:3].max(), x.iloc[4:-2].max()])], axis=1)
-        best_llm = df.loc[("best","best"), ("best","best")]
-        best_model = df[best_llm].loc[("best","best"),f"best_{best_llm}"]
-        df.loc[("best","best"), ("best","best")] = best_llm + " " + best_model
+            df.loc[:, (key, f"best_{key}")] = df.loc[:, key].apply(
+                lambda x: df.loc[:, "bert"].columns[:-1][x.argmax()], axis=1
+            )
+            df.loc["best", (key, f"best_{key}")] = df.loc[
+                :, (key, f"best_{key}")
+            ].mode()[0]
+        df[("best", "best")] = df.apply(
+            lambda x: list(inverted_results[dataset_folder].keys())[
+                np.argmax([x.iloc[:3].max(), x.iloc[4:-2].max()])
+            ],
+            axis=1,
+        )
+        best_llm = df.loc[("best", "best"), ("best", "best")]
+        best_model = df[best_llm].loc[("best", "best"), f"best_{best_llm}"]
+        df.loc[("best", "best"), ("best", "best")] = best_llm + " " + best_model
         dataset_results_df[dataset_folder] = df
 
     dataset_results = {}
@@ -137,13 +174,18 @@ def analyze_results():
         dataset_results[dataset_folder.name] = pd.DataFrame(
             dataset_results_df[dataset_folder.name].loc[
                 [
-                    ("weighted avg","precision"), 
-                    ("weighted avg","recall"),
-                    ("weighted avg","f1-score")
-                ], 
-                [(llm_name, model_name) for llm_name in inverted_results[dataset_folder.name].keys() 
-                            for model_name in inverted_results[dataset_folder.name][llm_name].keys()]
+                    ("weighted avg", "precision"),
+                    ("weighted avg", "recall"),
+                    ("weighted avg", "f1-score"),
+                ],
+                [
+                    (llm_name, model_name)
+                    for llm_name in inverted_results[dataset_folder.name].keys()
+                    for model_name in inverted_results[dataset_folder.name][
+                        llm_name
+                    ].keys()
+                ],
             ]
         )
-    
+
     return dataset_results, dataset_results_df
