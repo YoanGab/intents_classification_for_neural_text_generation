@@ -25,14 +25,19 @@
   ```bash
     python -m intents_classification --mode test
   ```
-  
-## Datasets
-The datasets used in this project is silicone from Huggingface datasets : https://huggingface.co/datasets/silicone
-
-## Models
-
 
 ## Experimental results
+|         |                         | Average | $DyDA_e$ | $IEMO$ | $MELD_e$ | $MELD_s$ | $SEM$ |
+|---------|-------------------------|---------|----------|--------|----------|----------|-------|
+| BERT    | Baseline                | 0.45    | 0.45     | 0.45   | 0.45     | 0.45     | 0.45  |
+|         | Fine-tuned Baseline     | 0.45    | 0.45     | 0.45   | 0.45     | 0.45     | 0.45  |
+|         | Three Layers Perceptron | 0.45    | 0.45     | 0.45   | 0.45     | 0.45     | 0.45  |
+|         | Four Layers Perceptron  | 0.45    | 0.45     | 0.45   | 0.45     | 0.45     | 0.45  |
+| RoBERTa | Baseline                | 0.45    | 0.45     | 0.45   | 0.45     | 0.45     | 0.45  |
+|         | Fine-tuned Baseline     | 0.45    | 0.45     | 0.45   | 0.45     | 0.45     | 0.45  |
+|         | Three Layers Perceptron | 0.45    | 0.45     | 0.45   | 0.45     | 0.45     | 0.45  |
+|         | Four Layers Perceptron  | 0.45    | 0.45     | 0.45   | 0.45     | 0.45     | 0.45  |
+
 
 ## References:
 
