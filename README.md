@@ -1,7 +1,5 @@
 # MLP Architectures for Emotion and Sentiment Analysis: A Comparative Study of Fine-Tuned BERT and RoBERTa Models
 
-This project 
-
 ## Abstract
 > This paper presents a comparative study of multi-layer perceptron (MLP) architectures for E/S analysis using fine-tuned BERT and RoBERTa models. We evaluate the performance of different MLP architectures on three datasets from Sequence labellIng evaLuatIon benChmark fOr spoken laNguagE (SILICONE): SEM, dyda\_e, and meld\_e. Specifically, we compare the baseline models (BERT and RoBERTa without fine-tuning) with fine-tuned models and two MLP architectures, namely a three-layer MLP and a four-layer MLP, both fine-tuned with BERT and RoBERTa. Our results show that fine-tuning significantly improves the performance of the baseline models, and MLP architectures outperform the baseline models in terms of accuracy. Furthermore, we observe that the four-layer MLP outperforms the three-layer MLP, and RoBERTa generally outperforms BERT across all architectures. Overall, our study provides insights into the effectiveness of different MLP architectures for E/S analysis, and highlights the benefits of fine-tuning pre-trained language models for this task.
 
@@ -33,6 +31,8 @@ The datasets used in this project is silicone from Huggingface datasets : https:
 
 ## Models
 
+
+## Experimental results
 
 ## References:
 
