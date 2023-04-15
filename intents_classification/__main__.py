@@ -118,8 +118,8 @@ def main():
     parser.add_argument(
         "--clip_grad_norm", type=float, help="Clip gradient norm", default=1.0
     )
-    parser.add_argument("--save", type=int, help="Save", default=True)
-    parser.add_argument("--save_freq", type=bool, help="Save frequency", default=500)
+    parser.add_argument("--save", type=bool, help="Save", default=True)
+    parser.add_argument("--save_freq", type=int, help="Save frequency", default=500)
     parser.add_argument("--warm_start", type=bool, help="Warm start", default=True)
     parser.add_argument("--scheduler", type=bool, help="Scheduler", default=False)
     parser.add_argument("--checkpoints", type=bool, help="Checkpoints", default=False)
