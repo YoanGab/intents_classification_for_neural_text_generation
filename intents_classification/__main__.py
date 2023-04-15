@@ -143,7 +143,7 @@ def main():
     warm_start = args.warm_start
     scheduler = args.scheduler
     checkpoints = args.checkpoints
-    if model_path is not None:
+    if args.model_path is not None:
         model_path = Path(args.model_path)
 
     if args.mode == "train":
