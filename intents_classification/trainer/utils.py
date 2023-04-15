@@ -65,6 +65,25 @@ def plot_comparison(
         format="png",
     )
 
+def plot_acc_val(model_dir, val_loss_per_epoch, val_accuracy_per_epoch, train_accuracy_per_epoch, train_loss_per_epoch):
+    fig, ax = plt.subplots()
+    ax.plot(range(len(val_loss_per_epoch)), val_loss_per_epoch, label="Validation Loss", color="orange")
+    ax.plot(range(len(train_loss_per_epoch)), train_loss_per_epoch, label="Train Loss", color="green")
+    ax2 = ax.twinx()
+    ax2.plot(range(len(val_accuracy_per_epoch)), val_accuracy_per_epoch, label="Validation Accuracy", color="red")
+    ax2.plot(range(len(train_accuracy_per_epoch)), train_accuracy_per_epoch, label="Train Accuracy", color="blue")
+    ax.legend()
+    ax2.legend()
+    ax.set_xlabel("Epochs")
+    ax.set_ylabel("Loss")
+    ax2.set_ylabel("Accuracy")
+    fig_title = f"Train and Validation Loss and Accuracy evolution over {str(len(val_loss_per_epoch))} epochs"
+    ax.set_title(fig_title)
+    fig.savefig(
+        model_dir / "confusion_matrix.csv" / f"train_val_loss_acc.png", format="png"
+    )
+
+
 
 def analyze_results():
     results = {}

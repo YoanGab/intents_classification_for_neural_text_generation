@@ -9,7 +9,7 @@ from transformers import get_linear_schedule_with_warmup
 
 from intents_classification.loaders import DatasetLoader, ModelLoader
 
-from .utils import DataType, FigureType, flat_accuracy, plot_comparison
+from .utils import DataType, FigureType, flat_accuracy, plot_comparison, plot_acc_val
 
 
 class Trainer:
@@ -131,6 +131,14 @@ class Trainer:
                 FigureType.TRAIN_VAL,
                 DataType.ACCURACY,
                 True,
+            )
+
+            plot_acc_val(
+                self.modelLoader.model_dir,
+                self.val_loss_per_epoch,
+                self.val_accuracy_per_epoch,
+                self.train_accuracy_per_epoch,
+                self.train_loss_per_epoch
             )
 
         plot_comparison(
