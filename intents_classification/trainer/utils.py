@@ -65,6 +65,7 @@ def plot_comparison(
         format="png",
     )
 
+
 def plot_acc_val(model_dir, val_loss_per_epoch, val_accuracy_per_epoch, train_accuracy_per_epoch, train_loss_per_epoch):
     fig, ax = plt.subplots()
     ax.plot(range(len(val_loss_per_epoch)), val_loss_per_epoch, label="Validation Loss", color="orange")
@@ -82,7 +83,6 @@ def plot_acc_val(model_dir, val_loss_per_epoch, val_accuracy_per_epoch, train_ac
     fig.savefig(
         model_dir / "confusion_matrix.csv" / f"train_val_loss_acc.png", format="png"
     )
-
 
 
 def analyze_results():
