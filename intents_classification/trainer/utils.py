@@ -81,7 +81,7 @@ def plot_acc_val(model_dir, val_loss_per_epoch, val_accuracy_per_epoch, train_ac
     fig_title = f"Train and Validation Loss and Accuracy evolution over {str(len(val_loss_per_epoch))} epochs"
     ax.set_title(fig_title)
     fig.savefig(
-        model_dir / "confusion_matrix.csv" / f"train_val_loss_acc.png", format="png"
+        model_dir / f"train_val_loss_acc.png", format="png"
     )
 
 
