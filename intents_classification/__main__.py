@@ -93,7 +93,7 @@ def main():
         "--dataset",
         type=str,
         help="Dataset name",
-        choices=["meld_s", "iemo", "sem", "meld_e", "dyda_e"],
+        choices=["meld_s", "iemocap", "sem", "meld_e", "dyda_e"],
         default="sem",
     )
     parser.add_argument(
