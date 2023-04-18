@@ -1,0 +1,9 @@
+# Byte-compiled
+*.pyc
+__pycache__/
+
+# Model checkpoints
+model_checkpoints/
+
+# Figures
+figs/
