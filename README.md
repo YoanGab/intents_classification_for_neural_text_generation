@@ -6,24 +6,24 @@
 ## Getting start
 1. Clone the repository:
 ```bash
-    git clone https://github.com/YoanGab/intents_classification_for_neural_text_generation.git
+git clone https://github.com/YoanGab/intents_classification_for_neural_text_generation.git
 ```  
 2. Download dependencies (prefered in a virtual env)
 ```bash
-    pip install --upgrade pip
-    pip install -r requirements.txt
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
 3. Run the package
 ```bash
-    cd intents_classification_for_neural_text_generation
+cd intents_classification_for_neural_text_generation
 ```
   a. Fine-tuned a model on a dataset
   ```bash
-    python -m intents_classification --mode train
+  python -m intents_classification --mode train
   ```
   b. Test a fine-tuned model
   ```bash
-    python -m intents_classification --mode test --model_path path/to/model.pkl
+  python -m intents_classification --mode test --model_path path/to/model.pkl
   ```
 
 ## Experimental results
