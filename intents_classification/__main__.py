@@ -107,10 +107,10 @@ def main():
         "--classification_model",
         type=str,
         help="Classification model name",
-        choices=["baseline_fine_tuned", "three_layers", "four_layers"],
-        default="baseline",
+        choices=["baseline", "baseline_fine_tuned", "three_layers", "four_layers"],
+        default="baseline_fine_tuned",
     )
-    parser.add_argument("--nb_epoch", type=int, help="Number of epochs", default=5)
+    parser.add_argument("--nb_epoch", type=int, help="Number of epochs", default=1)
     parser.add_argument("--batch_size", type=int, help="Batch size", default=8)
     parser.add_argument(
         "--learning_rate", type=float, help="Learning rate", default=2e-5
@@ -156,6 +156,9 @@ def main():
             if classification_model_name == "four_layers"
             else None
         )
+        if classification_model is None:
+            raise ValueError("Classification model given can't be trained.")
+
         dataset_loader = DatasetLoader(
             dataset_name=dataset_name,
             tokenizer_name=llm_model_name,

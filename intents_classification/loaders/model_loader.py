@@ -61,7 +61,7 @@ class ModelLoader:
             raise ValueError("Loss not supported")
 
     def _reset_model(self):
-        if type(self.model_type) != str:
+        if not isinstance(self.model_type, str):
             self.model = self.model_type(
                 self.language_model,
                 len(self.datasetLoader.unique_labels),
