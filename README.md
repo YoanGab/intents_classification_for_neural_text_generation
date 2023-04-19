@@ -38,6 +38,9 @@ pip install -r requirements.txt
 |         | Three Layers Perceptron | 0.435   | 0.734    | 0.108  | 0.313    | 0.527    | 0.495 |
 |         | Four Layers Perceptron  | 0.378   | 0.470    | 0.100  | 0.369    | 0.491    | 0.458 |
 
+## Authors
+- [Flavien Deseure--Charron](https://github.com/flaviendeseure)
+- [Yoan Gabison](https://github.com/YoanGab)
 
 ## References:
 
