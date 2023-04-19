@@ -11,7 +11,6 @@ cd intents_classification_for_neural_text_generation
 ```  
 2. Download dependencies
 ```bash
-```sh
 python -m venv intent_classification
 source intent_classification/bin/activate
 pip install --upgrade pip
