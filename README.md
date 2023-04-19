@@ -7,6 +7,7 @@
 1. Clone the repository:
 ```bash
 git clone https://github.com/YoanGab/intents_classification_for_neural_text_generation.git
+cd intents_classification_for_neural_text_generation
 ```  
 2. Download dependencies (prefered in a virtual env)
 ```bash
@@ -14,9 +15,6 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 3. Run the package
-```bash
-cd intents_classification_for_neural_text_generation
-```
   a. Fine-tuned a model on a dataset
   ```bash
   python -m intents_classification --mode train
